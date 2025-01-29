@@ -5,3 +5,7 @@ I consider essential:
 -the price
 -the keywords
 -the image string
+
+##TODO:
+- Add a way to add entries into the database from requests from Postman
+    After this, front end development should advance

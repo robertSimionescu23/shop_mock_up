@@ -18,11 +18,15 @@ function startServer(port){
 // Define getting an item from the DB
 httpServer.get('/item', async (req, res) => {
     console.log(req.query["id"]);
-    let searchShopId = req.query["id"];
-    const database = client.db('testDB');
-    const collection = database.collection('testCollection');
-    const DBquery = { shopID : searchShopId };
-    const item = await collection.findOne(DBquery);
+    let searchShopId = req.query["id"];//get the shopID of the item to be searched in the DB
+
+    //Choose the db and collection
+    const database = client.db('shopItemsDB');
+    const collection = database.collection('items');
+
+    const DBquery = { shopID : searchShopId }; //Format the shopID into a suitable format
+    const item = await collection.findOne(DBquery); //Find the item with the id
+
     if(item == null){
         console.log(`Item with id : ${searchShopId} does not exist.`);
         res.status(404).send("Item is not in the database.");
@@ -31,5 +35,10 @@ httpServer.get('/item', async (req, res) => {
         res.json(item);
 });
 
+httpServer.post('/item', async (req, res) => {
+    console.log("Post");
+    res.send("good");
+})
 
-export {startServer};
+
+export default startServer;

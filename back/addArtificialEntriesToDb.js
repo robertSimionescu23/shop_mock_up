@@ -52,8 +52,8 @@ async function addArtificialEntriesToDb() {
                 console.log("Connected to MongoDB!");
 
                 // Select the database and collection
-                const database = client.db("testDB"); // Replace with your database name
-                const collection = database.collection("testCollection"); // Replace with your collection name
+                const database = client.db("shopItemsDB"); // Replace with your database name
+                const collection = database.collection("items"); // Replace with your collection name
 
                 // Use insertOne to insert the document
                 const result = await collection.insertOne(entry);
