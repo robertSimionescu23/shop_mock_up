@@ -1,28 +1,20 @@
 import {askQuestion, rl} from "./askQuestion.js";
+import { requiredFields } from "./createDBEntry.js";
 // //The fields that accept simple strings with little to no logic attached.
-var requiredFields = [
-    "gender",
-    "type",
-    "currency",
-    "price",
-    "sizes",
-    "keywords",
-    "description",
-    "available"
-]
 
+var stringFields = requiredFields.slice(1, 10); //Get only the fields of info that needs to be manually defined here. The name is defined at creating, cannot be null, so it is treated separately.
 
 async function getStringFields() {
 
     let fieldsArray = [];
 
-    for (let idx = 0; idx < requiredFields.length; idx ++){
+    for (let idx = 0; idx < stringFields.length; idx ++){
 
         let resp = "";
 
-        switch(requiredFields[idx]){
-            case "gender":
-                resp = await askQuestion(`${requiredFields[idx]}? First letter of full word of "female", "male" and "unisex" are allowed.\n`);
+        switch(stringFields[idx]){
+            case "clothing gender":
+                resp = await askQuestion(`${stringFields[idx]}? First letter of full word of "female", "male" and "unisex" are allowed.\n`);
                 if (resp != "female" & resp != "male" & resp != "unisex" & resp != "f" & resp != "m" & resp != "u") {
                     console.log("Unknown gender input. Please choose between \"male\", \"female\" and \"unisex\" clothing. You can also use the first letters of each.\n")
                     idx --;

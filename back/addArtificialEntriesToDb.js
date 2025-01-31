@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import { customAlphabet } from 'nanoid'
 import getStringFields from "./getStringFields.js"
-import createDBEntry from "./createDBEntry.js";
+import {createDBEntry} from "./createDBEntry.js";
 import { MongoClient } from "mongodb";
 import { askQuestion, rl } from "./askQuestion.js";
 
@@ -52,8 +52,8 @@ async function addArtificialEntriesToDb() {
                 console.log("Connected to MongoDB!");
 
                 // Select the database and collection
-                const database = client.db("shopItemsDB"); // Replace with your database name
-                const collection = database.collection("items"); // Replace with your collection name
+                const database = client.db("shopItemsDB");
+                const collection = database.collection("items");
 
                 // Use insertOne to insert the document
                 const result = await collection.insertOne(entry);
