@@ -1,4 +1,5 @@
 import express from 'express';
+import multer  from 'multer';
 import { MongoClient, ObjectId } from "mongodb";
 import { requiredFields } from './createDBEntry.js';
 import { customAlphabet } from 'nanoid'
@@ -8,7 +9,26 @@ const uri = "mongodb://localhost:27017/";
 const client = new MongoClient(uri);
 
 const httpServer = express();
+
 httpServer.use(express.json());
+httpServer.use(express.urlencoded({ extended: true }));
+
+//TODO? Look into uploading images to Filein.io
+const storage = multer.diskStorage({
+    destination: function(req, file, cb){
+        //TODO: Make a separate directory for each item
+        cb(null, 'test/')
+    },
+    filename: function(req, file, cb){
+        // const uniqueSuffix = Date.now() + '_' + Math.round(Math.random() * 1e9);
+        // const fileExtension = path.extname(file.originalname);
+        console.log(req.file)
+        //TODO: Make the name contain the ID of the item you wish to associate the image. Make multiple images upload possible.
+        let fileName = req.body.name || "no"
+        cb(null, fileName + ".jpg");
+    }
+})
+const upload = multer({storage}) //To upload images to "images" director using express Multer
 
 function startServer(port){
     // Start the server on designated port
@@ -139,6 +159,10 @@ httpServer.post('/api/item', async (req, res) => {
     }
 });
 
+httpServer.post('/api/uploadImage', upload.single('uploadImage'), async (req, res) => {
+    console.log(req.body["name"])
+    res.status(200).send("image uploaded.")
+});
 
 httpServer.put('/api/changeItemByID', async (req, res) => {
     let searchShopId;
