@@ -7,5 +7,5 @@ I consider essential:
 -the image string
 
 ##TODO:
-- Add a way to add entries into the database from requests from Postman
-    After this, front end development should advance
+- Add a way to upload images to server through request, and add them to the images field of a DB item, by path.
+- Front End start development
