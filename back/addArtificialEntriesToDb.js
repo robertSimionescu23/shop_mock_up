@@ -29,7 +29,7 @@ async function createArtificalDBEntries(name){
 
     console.log(`Input information for product ${name}`);
     let stringFields = await getStringFields(); //Get all info inputed by user.
-    const nanoid = customAlphabet('1234567890abcdef', 6) //Unique Id
+    const nanoid = customAlphabet('1234567890abcdef', 24) //Unique Id
     let id = nanoid();
 
     let infoArray = [name, ...stringFields, imagesPath, id]; //Add all info into an array.
