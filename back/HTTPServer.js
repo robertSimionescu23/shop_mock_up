@@ -3,6 +3,8 @@ import multer  from 'multer';
 import { MongoClient, ObjectId } from "mongodb";
 import { requiredFields } from './createDBEntry.js';
 import { customAlphabet } from 'nanoid'
+import { mkdirSync, readdirSync , statSync} from 'fs';
+
 
 const uri = "mongodb://localhost:27017/";
 // Create a new MongoClient
@@ -13,22 +15,103 @@ const httpServer = express();
 httpServer.use(express.json());
 httpServer.use(express.urlencoded({ extended: true }));
 
+function getFiles(directory){
+    const directoryPath = directory;
+
+    try {
+        let filesPath= readdirSync(directoryPath);
+        filesPath = filesPath.map(file => `./images/${file}`)
+        return filesPath
+    } catch (err) {
+        console.error('Error reading directory:', err);
+    }
+
+}
+
+function getDirectories(filePaths){
+    const directoryList = [];
+    console.log("We here")
+    console.log(filePaths)
+    console.log(typeof(filePaths))
+
+    let entryStatus
+
+    filePaths.forEach(file => {
+        entryStatus = statSync(file);
+        if(entryStatus.isDirectory()){
+            directoryList.push(file);
+        }
+        else
+            console.log(`WARNING: ${file} is not loose, not contained in a folder.`)
+    });
+
+    return directoryList
+}
+
 //TODO? Look into uploading images to Filein.io
 const storage = multer.diskStorage({
+
     destination: function(req, file, cb){
         //TODO: Make a separate directory for each item
-        cb(null, 'test/')
+        const imageFolder = "./images"
+        const directories = getDirectories(getFiles(imageFolder))
+
+        if(imageFolder + "/" + req.body.id in directories)
+            cb(null, imageFolder + "/" + req.body.id)
+        else{
+            try{
+                mkdirSync(imageFolder + "/" + req.body.id, { recursive: true })
+                cb(null, imageFolder + "/" + req.body.id)
+            }
+            catch(err){
+                console.error("Directory error", err)
+            }
+        }
     },
     filename: function(req, file, cb){
-        // const uniqueSuffix = Date.now() + '_' + Math.round(Math.random() * 1e9);
-        // const fileExtension = path.extname(file.originalname);
-        console.log(req.file)
-        //TODO: Make the name contain the ID of the item you wish to associate the image. Make multiple images upload possible.
-        let fileName = req.body.name || "no"
-        cb(null, fileName + ".jpg");
+        //TODO:Make multiple images upload possible.
+        let fileName = req.body.name || "default";
+        let extension = "." + file.originalname.split(".").pop();
+
+        cb(null, fileName + extension);
     }
 })
-const upload = multer({storage}) //To upload images to "images" director using express Multer
+const upload = multer({storage: storage,
+    fileFilter: async function (req, file, cb){ //TODO: add a way to check that the file is a image.
+        //TODO: add a way to check the id before making the folder.
+         try{
+             await client.connect(); //Connect to DB
+             const database = client.db("shopItemsDB");
+             const collection = database.collection("items");
+
+             if(req.body.id.length < 24){
+                console.log("ID too short")
+                return cb(new Error("ID too short."), false, false)
+             }
+
+             let DBID = new ObjectId(req.body.id)
+
+             const DBquery = { _id : DBID }; //Format the shopID into a suitable format
+             const item = await collection.findOne(DBquery); //Find the item with the id
+
+             if(item)
+                 cb(null, true);
+             else{
+                 console.log("Id does not exist");
+                 cb(new Error("ID does not exist in the database."), false, false);
+             }
+
+
+         }
+         catch(err){
+             console.error("DB or file error", err)
+             await client.close()
+         }
+         finally{
+             await client.close()
+         }
+         },
+}) //To upload images to "images" director using express Multer
 
 function startServer(port){
     // Start the server on designated port
@@ -159,7 +242,19 @@ httpServer.post('/api/item', async (req, res) => {
     }
 });
 
-httpServer.post('/api/uploadImage', upload.single('uploadImage'), async (req, res) => {
+
+function uploadHandler(req, res, next) {
+    upload.single('uploadImage')(req, res, function (err) {
+        if (err) {
+            return res.status(404).send({error: err.message});
+        }
+        else{
+            return res.status(200);
+        }
+    });
+}
+
+httpServer.post('/api/uploadImage', uploadHandler , async (req, res) => {
     console.log(req.body["name"])
     res.status(200).send("image uploaded.")
 });
