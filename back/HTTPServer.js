@@ -4,7 +4,7 @@ import { MongoClient, ObjectId } from "mongodb";
 import { requiredFields } from './createDBEntry.js';
 import { customAlphabet } from 'nanoid'
 import { mkdirSync, readdirSync , statSync} from 'fs';
-
+import path from 'path';
 
 const uri = "mongodb://localhost:27017/";
 // Create a new MongoClient
@@ -20,7 +20,7 @@ function getFiles(directory){
 
     try {
         let filesPath= readdirSync(directoryPath);
-        filesPath = filesPath.map(file => `./images/${file}`)
+        filesPath = filesPath.map(file => `${directoryPath}` + "/" + `${file}`)
         return filesPath
     } catch (err) {
         console.error('Error reading directory:', err);
@@ -30,9 +30,6 @@ function getFiles(directory){
 
 function getDirectories(filePaths){
     const directoryList = [];
-    console.log("We here")
-    console.log(filePaths)
-    console.log(typeof(filePaths))
 
     let entryStatus
 
@@ -49,19 +46,21 @@ function getDirectories(filePaths){
 }
 
 //TODO? Look into uploading images to Filein.io
-const storage = multer.diskStorage({
 
+const storage = multer.diskStorage({
     destination: function(req, file, cb){
-        //TODO: Make a separate directory for each item
         const imageFolder = "./images"
         const directories = getDirectories(getFiles(imageFolder))
+        let dir = imageFolder + "/" + req.body.id;
+        req.uploadLocation = dir;
 
-        if(imageFolder + "/" + req.body.id in directories)
-            cb(null, imageFolder + "/" + req.body.id)
+        if(directories.includes(dir))
+            cb(null, dir)
         else{
             try{
-                mkdirSync(imageFolder + "/" + req.body.id, { recursive: true })
-                cb(null, imageFolder + "/" + req.body.id)
+                console.log("Creating folder, as it does not exist.")
+                mkdirSync(dir, { recursive: true })
+                cb(null, dir)
             }
             catch(err){
                 console.error("Directory error", err)
@@ -69,48 +68,60 @@ const storage = multer.diskStorage({
         }
     },
     filename: function(req, file, cb){
-        //TODO:Make multiple images upload possible.
-        let fileName = req.body.name || "default";
-        let extension = "." + file.originalname.split(".").pop();
+        var fileName                = req.body.name || "default";
+        let fileExtension           = path.extname(file.originalname)
+        let filesInDir              = getFiles(req.uploadLocation)
 
-        cb(null, fileName + extension);
+        let completeFileLocation    = req.uploadLocation + "/" + fileName + fileExtension;
+
+        let iteration = 1; //Mechansim for unique file names
+        let origalFileName = fileName
+        while (filesInDir.includes(completeFileLocation)){
+            fileName = origalFileName + "_" + String(iteration);
+            completeFileLocation = req.uploadLocation + "/" + fileName + fileExtension;
+            iteration = iteration + 1;
+        }
+
+        cb(null, fileName + fileExtension);
     }
 })
 const upload = multer({storage: storage,
-    fileFilter: async function (req, file, cb){ //TODO: add a way to check that the file is a image.
-        //TODO: add a way to check the id before making the folder.
-         try{
-             await client.connect(); //Connect to DB
-             const database = client.db("shopItemsDB");
-             const collection = database.collection("items");
+    fileFilter: async function (req, file, cb){
 
-             if(req.body.id.length < 24){
+        try{
+            await client.connect(); //Connect to DB
+            const database = client.db("shopItemsDB");
+            const collection = database.collection("items");
+
+            if(req.body.id.length < 24){
                 console.log("ID too short")
-                return cb(new Error("ID too short."), false, false)
+                return cb(new Error("ID too short."), false)
              }
 
-             let DBID = new ObjectId(req.body.id)
+            let DBID = new ObjectId(req.body.id)
 
-             const DBquery = { _id : DBID }; //Format the shopID into a suitable format
-             const item = await collection.findOne(DBquery); //Find the item with the id
+            const DBquery = { _id : DBID }; //Format the shopID into a suitable format
+            const item = await collection.findOne(DBquery); //Find the item with the id
 
-             if(item)
-                 cb(null, true);
-             else{
-                 console.log("Id does not exist");
-                 cb(new Error("ID does not exist in the database."), false, false);
-             }
+            if(!item){
+                console.log("Id does not exist");
+                return cb(new Error("ID does not exist in the database."), false);
+            }
+        }
+        catch(err){
+            console.error("DB or file error", err)
+        }
+        finally{
+            await client.close();
+        }
 
+        let fileExtension = path.extname(file.originalname);
 
-         }
-         catch(err){
-             console.error("DB or file error", err)
-             await client.close()
-         }
-         finally{
-             await client.close()
-         }
-         },
+        if([".jpg",".jpeg",".png"].includes(fileExtension))
+            return cb(null, true);
+        else return cb(new Error("The file is not a common image format. (JPG, PNG or JPEG)"), false);
+
+    },
 }) //To upload images to "images" director using express Multer
 
 function startServer(port){
@@ -138,7 +149,7 @@ httpServer.get('/api/itemById', async (req, res) => {
             const DBquery = { _id : searchDBID }; //Format the shopID into a suitable format
             const item = await collection.findOne(DBquery); //Find the item with the id
 
-            if(item == null){
+            if(!item){
                 console.log(`Item with id : ${searchShopId} does not exist.`);
                 res.status(404).send("Item is not in the database.");
             }
@@ -163,7 +174,7 @@ httpServer.get('/api/itemById', async (req, res) => {
 });
 
 
-httpServer.post('/api/item', async (req, res) => {
+httpServer.post('/api/item', async (req, res) => { //TODO: Incoporate image uploading here
     if(!req.body || Object.keys(req.body).length == 0){
         res.status(400).send("Empty body request.")
         return false
@@ -242,22 +253,19 @@ httpServer.post('/api/item', async (req, res) => {
     }
 });
 
-
+//Used to transmit the error to the request response.
 function uploadHandler(req, res, next) {
     upload.single('uploadImage')(req, res, function (err) {
         if (err) {
             return res.status(404).send({error: err.message});
         }
         else{
-            return res.status(200);
+            return res.status(200).send({success: "Image uploaded"});
         }
     });
 }
 
-httpServer.post('/api/uploadImage', uploadHandler , async (req, res) => {
-    console.log(req.body["name"])
-    res.status(200).send("image uploaded.")
-});
+httpServer.post('/api/uploadImage', uploadHandler);
 
 httpServer.put('/api/changeItemByID', async (req, res) => {
     let searchShopId;

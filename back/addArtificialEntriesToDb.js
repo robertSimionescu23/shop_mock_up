@@ -5,6 +5,8 @@ import {createDBEntry} from "./createDBEntry.js";
 import { MongoClient } from "mongodb";
 import { askQuestion, rl } from "./askQuestion.js";
 
+//TODO: Revisit this to add image handeling.
+
 // MongoDB connection URL (replace placeholders with your details)
 const uri = "mongodb://localhost:27017/";
 
