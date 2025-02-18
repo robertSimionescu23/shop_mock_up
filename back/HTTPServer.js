@@ -3,8 +3,11 @@ import multer  from 'multer';
 import { MongoClient, ObjectId } from "mongodb";
 import { requiredFields } from './createDBEntry.js';
 import { customAlphabet } from 'nanoid'
-import { mkdirSync, readdirSync , statSync} from 'fs';
+import { unlink, mkdirSync, readdirSync , statSync} from 'fs';
 import path from 'path';
+
+//TODO: Add empty request prevention everywhere
+//TODO: Create an image directory for every item
 
 const uri = "mongodb://localhost:27017/";
 // Create a new MongoClient
@@ -24,6 +27,7 @@ function getFiles(directory){
         return filesPath
     } catch (err) {
         console.error('Error reading directory:', err);
+        return []
     }
 }
 
@@ -253,7 +257,7 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
 });
 
 //Used to transmit the error to the request response.
-function uploadHandler(req, res, next) {
+function uploadHandler(req, res) {
     upload.single('uploadImage')(req, res, function (err) {
         if (err) {
             return res.status(404).send({error: err.message});
@@ -264,7 +268,94 @@ function uploadHandler(req, res, next) {
     });
 }
 
+// function deleteHandler(req, res) {
+//     upload.single('uploadImage')(req, res, function (err) {
+//         if (err) {
+//             return res.status(404).send({error: err.message});
+//         }
+//         else{
+//             return res.status(200).send({success: "Image uploaded"});
+//         }
+//     });
+// }
+
+
 httpServer.post('/api/uploadImage', uploadHandler); //Note: For multiple image uploading, I could just do multiple requests.
+httpServer.delete(`/api/deleteImage`, async (req,res) =>{
+    let imageToDelete;
+    let id           ;
+
+    if(req.body.name)
+        imageToDelete = req.body.name
+    else{
+        res.status(404).send("No image specified")
+        return false
+    }
+
+    if(req.body.id)
+        id = req.body.id
+    else{
+        res.status(404).send("No item id specified. Specify product to delete image from.")
+        return false
+    }
+
+    if(id.length < 24){
+        res.status(400).send("Id specified is not 24 characters long, thus incompatible.")
+        return false
+    }
+
+    try{
+        await client.connect();
+
+        let DBID = new ObjectId(id);
+
+        const database = client.db("shopItemsDB");
+        const collection = database.collection("items");
+
+        // Use insertOne to insert the document
+        const DBquery = { _id : DBID };
+        const result = await collection.findOne(DBquery);
+
+        if(!result){
+            res.status(404).send("The item does not exist in the database.");
+            return false;
+        }
+    }
+    catch(err){
+        console.error(`Database has encountered error looking for item with id ${id}`, err);
+    }
+    finally{
+        client.close();
+    }
+
+    let imagesInDirectory = getFiles("./images/" + id)
+    if(imagesInDirectory.length > 0){
+        imageToDelete = "./images/" + id + "/" + imageToDelete;
+        if(!imagesInDirectory.includes(imageToDelete)){
+            res.status(404).send("The image specified does not exist in the item directory. Please make sure the extension and name are correct.");
+            return false;
+        }
+        else{
+            console.log("Image with the given id and name exists, and will be deleted");
+
+            unlink(imageToDelete, (err) => {
+                if (err){
+                    console.log("Image could not be deleted");
+                    throw err;
+                }
+                console.log(`Image was deleted`);
+            });
+            res.status(200).send("The image was deleted with succes.")
+            return true;
+        }
+    }
+    else{
+        res.status(404).send("The item does not have any images to delete.");
+        return false;
+    }
+
+
+});
 
 httpServer.put('/api/changeItemByID', async (req, res) => {
     let searchShopId;
