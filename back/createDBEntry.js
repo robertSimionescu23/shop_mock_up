@@ -8,8 +8,7 @@ var requiredFields = [
     "keywords"      ,
     "description"   ,
     "available"     ,
-    "images"        ,
-    "shopID"        ]; //Define here all the needed fields for the db entry
+    "images"        ]//Define here all the needed fields for the db entry
 
 async function createDBEntry(infoArray){
     var dbEntry = {};

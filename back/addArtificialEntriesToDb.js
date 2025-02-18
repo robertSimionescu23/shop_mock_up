@@ -5,6 +5,8 @@ import {createDBEntry} from "./createDBEntry.js";
 import { MongoClient } from "mongodb";
 import { askQuestion, rl } from "./askQuestion.js";
 
+//TODO: Revisit this to add image handeling.
+
 // MongoDB connection URL (replace placeholders with your details)
 const uri = "mongodb://localhost:27017/";
 
@@ -29,7 +31,7 @@ async function createArtificalDBEntries(name){
 
     console.log(`Input information for product ${name}`);
     let stringFields = await getStringFields(); //Get all info inputed by user.
-    const nanoid = customAlphabet('1234567890abcdef', 6) //Unique Id
+    const nanoid = customAlphabet('1234567890abcdef', 24) //Unique Id
     let id = nanoid();
 
     let infoArray = [name, ...stringFields, imagesPath, id]; //Add all info into an array.
