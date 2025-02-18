@@ -25,7 +25,6 @@ function getFiles(directory){
     } catch (err) {
         console.error('Error reading directory:', err);
     }
-
 }
 
 function getDirectories(filePaths){
@@ -174,7 +173,7 @@ httpServer.get('/api/itemById', async (req, res) => {
 });
 
 
-httpServer.post('/api/item', async (req, res) => { //TODO: Incoporate image uploading here
+httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I can just enter them in the same menu, but upload the image through different request.
     if(!req.body || Object.keys(req.body).length == 0){
         res.status(400).send("Empty body request.")
         return false
@@ -265,7 +264,7 @@ function uploadHandler(req, res, next) {
     });
 }
 
-httpServer.post('/api/uploadImage', uploadHandler);
+httpServer.post('/api/uploadImage', uploadHandler); //Note: For multiple image uploading, I could just do multiple requests.
 
 httpServer.put('/api/changeItemByID', async (req, res) => {
     let searchShopId;
