@@ -7,7 +7,6 @@ import { unlink, mkdirSync, readdirSync , statSync} from 'fs';
 import path from 'path';
 
 //TODO: Add empty request prevention everywhere
-//TODO: Create an image directory for every item
 
 const uri = "mongodb://localhost:27017/";
 // Create a new MongoClient
@@ -70,7 +69,7 @@ const storage = multer.diskStorage({
             }
         }
     },
-    filename: function(req, file, cb){
+    filename: async function(req, file, cb){
         var fileName                = req.body.name || "default";
         let fileExtension           = path.extname(file.originalname)
         let filesInDir              = getFiles(req.uploadLocation)
@@ -85,13 +84,45 @@ const storage = multer.diskStorage({
             iteration = iteration + 1;
         }
 
-        cb(null, fileName + fileExtension);
+        //Add the file name to the DB
+        try{
+            console.log("Connecting to DB");
+            await client.connect();
+
+            const database = client.db("shopItemsDB");
+            const collection = database.collection("items");
+
+            let DBID = new ObjectId(req.body.id)
+
+
+            const DBquery = { _id : DBID }; //Format the shopID into a suitable format
+
+            let fileWithExtension = fileName + fileExtension
+            let pushUpdate = { $push: { images : fileWithExtension } }; // Add image name to image array by pushing
+
+            await collection.updateOne(DBquery, pushUpdate);
+
+            cb(null, fileName + fileExtension);
+        }
+        catch(err){
+            console.error("There was an error adding image path to DB.", err);
+            return cb(new Error("Error adding image name to DB."), false);
+        }
+        finally{
+            client.close();
+            console.log("Closing DB connection");
+        }
     }
 })
 const upload = multer({storage: storage,
     fileFilter: async function (req, file, cb){
+        if(!req.body)
+            return cb(new Error("Empty body request."), false)
+        if(!req.body.id)
+            return cb(new Error("No id in request body."), false)
 
         try{
+            console.log("Connecting to DB");
             await client.connect(); //Connect to DB
             const database = client.db("shopItemsDB");
             const collection = database.collection("items");
@@ -116,6 +147,7 @@ const upload = multer({storage: storage,
         }
         finally{
             await client.close();
+            console.log("Closing DB connection")
         }
 
         let fileExtension = path.extname(file.originalname);
@@ -141,6 +173,7 @@ httpServer.get('/api/itemById', async (req, res) => {
     if(req.query.id){
         searchShopId = req.query["id"];//get the shopID of the item to be searched in the DB
         try{
+            console.log("Connecting to DB");
             client.connect(); //Connect to DB
 
             //Choose the db and collection
@@ -167,6 +200,7 @@ httpServer.get('/api/itemById', async (req, res) => {
         }
         finally{
             client.close();
+            console.log("Closing DB connection")
         }
 
     }
@@ -232,6 +266,7 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
                 let DBID = new ObjectId(id);
                 item._id = DBID //MongoDB _id, also used as shopID
 
+                console.log("Connecting to DB");
                 client.connect(); //Connect to DB
                 const database = client.db("shopItemsDB");
                 const collection = database.collection("items");
@@ -248,8 +283,8 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
             }
             finally{
                 // Close the connection
-                console.log("Closing client");
                 await client.close();
+                console.log("Closing DB connection")
             }
             res.status(200).send(`Item was posted with _id: ${item._id}"`);
         }
@@ -260,6 +295,7 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
 function uploadHandler(req, res) {
     upload.single('uploadImage')(req, res, function (err) {
         if (err) {
+            console.error("Encountered error:", err)
             return res.status(404).send({error: err.message});
         }
         else{
@@ -268,23 +304,12 @@ function uploadHandler(req, res) {
     });
 }
 
-// function deleteHandler(req, res) {
-//     upload.single('uploadImage')(req, res, function (err) {
-//         if (err) {
-//             return res.status(404).send({error: err.message});
-//         }
-//         else{
-//             return res.status(200).send({success: "Image uploaded"});
-//         }
-//     });
-// }
-
 
 httpServer.post('/api/uploadImage', uploadHandler); //Note: For multiple image uploading, I could just do multiple requests.
 httpServer.delete(`/api/deleteImage`, async (req,res) =>{
     let imageToDelete;
     let id           ;
-
+    if(!req.body)
     if(req.body.name)
         imageToDelete = req.body.name
     else{
@@ -305,6 +330,7 @@ httpServer.delete(`/api/deleteImage`, async (req,res) =>{
     }
 
     try{
+        console.log("Connecting to DB");
         await client.connect();
 
         let DBID = new ObjectId(id);
@@ -326,6 +352,7 @@ httpServer.delete(`/api/deleteImage`, async (req,res) =>{
     }
     finally{
         client.close();
+        console.log("Closing DB connection")
     }
 
     let imagesInDirectory = getFiles("./images/" + id)
@@ -357,7 +384,7 @@ httpServer.delete(`/api/deleteImage`, async (req,res) =>{
 
 });
 
-httpServer.put('/api/changeItemByID', async (req, res) => {
+httpServer.put('/api/changeItemByID', async (req, res) => { //TODO: Redo to use body info. This is overkill
     let searchShopId;
     let keyToChange ;
     let value       ;
@@ -427,6 +454,7 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
 
     else{ //If fields are ok
         try{
+            console.log("Connecting to DB");
             client.connect(); //Connect to DB
             const database = client.db("shopItemsDB");
             const collection = database.collection("items");
@@ -458,8 +486,8 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
         }
         finally{
             // Close the connection
-            console.log("Closing client");
             await client.close();
+            console.log("Closing DB connection")
         }
     }
 });
