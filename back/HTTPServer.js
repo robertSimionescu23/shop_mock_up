@@ -3,7 +3,7 @@ import multer  from 'multer';
 import { MongoClient, ObjectId } from "mongodb";
 import { requiredFields } from './createDBEntry.js';
 import { customAlphabet } from 'nanoid'
-import { mkdirSync, readdirSync , statSync} from 'fs';
+import { unlink, mkdirSync, readdirSync , statSync} from 'fs';
 import path from 'path';
 
 const uri = "mongodb://localhost:27017/";
@@ -24,6 +24,7 @@ function getFiles(directory){
         return filesPath
     } catch (err) {
         console.error('Error reading directory:', err);
+        return []
     }
 }
 
@@ -66,7 +67,7 @@ const storage = multer.diskStorage({
             }
         }
     },
-    filename: function(req, file, cb){
+    filename: async function(req, file, cb){
         var fileName                = req.body.name || "default";
         let fileExtension           = path.extname(file.originalname)
         let filesInDir              = getFiles(req.uploadLocation)
@@ -81,20 +82,53 @@ const storage = multer.diskStorage({
             iteration = iteration + 1;
         }
 
-        cb(null, fileName + fileExtension);
+        //Add the file name to the DB
+        try{
+            console.log("Connecting to DB");
+            await client.connect();
+
+            const database = client.db("shopItemsDB");
+            const collection = database.collection("items");
+
+            let DBID = new ObjectId(req.body.id)
+
+
+            const DBquery = { _id : DBID }; //Format the shopID into a suitable format
+
+            let fileWithExtension = fileName + fileExtension
+            let pushUpdate = { $push: { images : fileWithExtension } }; // Add image name to image array by pushing
+
+            await collection.updateOne(DBquery, pushUpdate);
+
+            cb(null, fileName + fileExtension);
+        }
+        catch(err){
+            console.error("There was an error adding image path to DB.", err);
+            return cb(new Error("Error adding image name to DB."), false);
+        }
+        finally{
+            client.close();
+            console.log("Closing DB connection");
+        }
     }
 })
 const upload = multer({storage: storage,
     fileFilter: async function (req, file, cb){
 
+        if(!Object.keys(req.body).length)
+            return cb(new Error("Empty body request."), false)
+        if(!req.body.id)
+            return cb(new Error("No id in request body."), false)
+
         try{
+            console.log("Connecting to DB");
             await client.connect(); //Connect to DB
             const database = client.db("shopItemsDB");
             const collection = database.collection("items");
 
-            if(req.body.id.length < 24){
-                console.log("ID too short")
-                return cb(new Error("ID too short."), false)
+            if(req.body.id.length != 24){
+                console.log("ID not of valid length (24).")
+                return cb(new Error("ID is not of 24 character length."), false)
              }
 
             let DBID = new ObjectId(req.body.id)
@@ -112,6 +146,7 @@ const upload = multer({storage: storage,
         }
         finally{
             await client.close();
+            console.log("Closing DB connection")
         }
 
         let fileExtension = path.extname(file.originalname);
@@ -133,11 +168,17 @@ function startServer(port){
 // Define getting an item from the DB
 httpServer.get('/api/itemById', async (req, res) => {
     let searchShopId;
+    if(Object.keys(req.body).length){
+        console.log("Request body should be empty, but isn't.");
+        res.status(404).send("Request Body isn't empty.");
+        return false;
+    }
 
     if(req.query.id){
         searchShopId = req.query["id"];//get the shopID of the item to be searched in the DB
         try{
-            client.connect(); //Connect to DB
+            console.log("Connecting to DB");
+            await client.connect(); //Connect to DB
 
             //Choose the db and collection
             const database   = client.db('shopItemsDB');
@@ -151,30 +192,36 @@ httpServer.get('/api/itemById', async (req, res) => {
             if(!item){
                 console.log(`Item with id : ${searchShopId} does not exist.`);
                 res.status(404).send("Item is not in the database.");
+                return false;
             }
             else{
                 console.log(`Item with id : ${searchShopId} was sent as response to get request.`);
                 res.status(200).json(item);
+                return true;
             }
         }
         catch(error){
             res.status(400).send(`Something went wrong`);
             console.error("Error getting item", error);
+            return false;
         }
         finally{
             client.close();
+            console.log("Closing DB connection")
         }
 
     }
     else{
         console.log("Get request with no query.");
         res.status(400).send("There is no search query.");
+        return false;
     }
 });
 
 
 httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I can just enter them in the same menu, but upload the image through different request.
-    if(!req.body || Object.keys(req.body).length == 0){
+    if(!Object.keys(req.body).length){
+        console.log("Empty body request was received.")
         res.status(400).send("Empty body request.")
         return false
     }
@@ -228,6 +275,7 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
                 let DBID = new ObjectId(id);
                 item._id = DBID //MongoDB _id, also used as shopID
 
+                console.log("Connecting to DB");
                 client.connect(); //Connect to DB
                 const database = client.db("shopItemsDB");
                 const collection = database.collection("items");
@@ -244,8 +292,8 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
             }
             finally{
                 // Close the connection
-                console.log("Closing client");
                 await client.close();
+                console.log("Closing DB connection")
             }
             res.status(200).send(`Item was posted with _id: ${item._id}"`);
         }
@@ -253,48 +301,142 @@ httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I
 });
 
 //Used to transmit the error to the request response.
-function uploadHandler(req, res, next) {
+function uploadHandler(req, res) {
     upload.single('uploadImage')(req, res, function (err) {
+        if(!req.file){
+            console.log("No image provided");
+            return res.status(404).send("No image was provided");
+        }
         if (err) {
-            return res.status(404).send({error: err.message});
+            console.error("Encountered error:", err)
+            return res.status(404).send(err.message);
         }
         else{
-            return res.status(200).send({success: "Image uploaded"});
+            console.log("Image uploaded");
+            return res.status(200).send("Image uploaded");
         }
     });
 }
 
+
 httpServer.post('/api/uploadImage', uploadHandler); //Note: For multiple image uploading, I could just do multiple requests.
+httpServer.delete(`/api/deleteImage`, async (req,res) =>{
+    let imageToDelete;
+    let id           ;
+    if(!Object.keys(req.body).length){
+        res.status(404).send("No body request")
+        return false
+    }
+
+    if(req.body.name)
+        imageToDelete = req.body.name
+    else{
+        res.status(404).send("No image specified")
+        return false
+    }
+
+    if(req.body.id)
+        id = req.body.id
+    else{
+        res.status(404).send("No item id specified. Specify product to delete image from.")
+        return false
+    }
+
+    if(id.length != 24){
+        res.status(400).send("Id specified is not 24 characters long, thus incompatible.")
+        return false
+    }
+
+    try{
+        console.log("Connecting to DB");
+        await client.connect();
+
+        let DBID = new ObjectId(id);
+
+        const database = client.db("shopItemsDB");
+        const collection = database.collection("items");
+
+        // Use insertOne to insert the document
+        const DBquery = { _id : DBID };
+        const result = await collection.findOne(DBquery);
+
+        if(!result){
+            res.status(404).send("The item does not exist in the database.");
+            return false;
+        }
+    }
+    catch(err){
+        console.error(`Database has encountered error looking for item with id ${id}`, err);
+    }
+    finally{
+        client.close();
+        console.log("Closing DB connection")
+    }
+
+    let imagesInDirectory = getFiles("./images/" + id)
+    if(imagesInDirectory.length > 0){
+        imageToDelete = "./images/" + id + "/" + imageToDelete;
+        if(!imagesInDirectory.includes(imageToDelete)){
+            res.status(404).send("The image specified does not exist in the item directory. Please make sure the extension and name are correct.");
+            return false;
+        }
+        else{
+            console.log("Image with the given id and name exists, and will be deleted");
+
+            unlink(imageToDelete, (err) => {
+                if (err){
+                    console.log("Image could not be deleted");
+                    throw err;
+                }
+                console.log(`Image was deleted`);
+            });
+            res.status(200).send("The image was deleted with succes.")
+            return true;
+        }
+    }
+    else{
+        res.status(404).send("The item does not have any images to delete.");
+        return false;
+    }
+
+
+});
 
 httpServer.put('/api/changeItemByID', async (req, res) => {
     let searchShopId;
     let keyToChange ;
     let value       ;
 
-    if(Object.keys(req.body).length != 0){
-        res.status(400).send("Body contains info.")
-        return false
-    }
+    console.log(req.body)
 
-    if(req.query.id){
-        searchShopId = req.query["id"];//get the shopID of the item to be searched in the DB
+    if(!Object.keys(req.body).length){
+        res.status(404).send("No body request");
+        return false;
+    }
+    if(req.body.id){
+        searchShopId = req.body.id;//get the shopID of the item to be searched in the DB
     }
     else{
         console.log("PUT request with no id.");
         res.status(404).send("There is no ID specified.");
         return false;
     }
+    if(req.body.id && req.body.id.length != 24){
+        console.log("PUT request with invalid id length.");
+        res.status(404).send("The ID is not of 24 character length.");
+        return false;
+    }
 
-    if(req.query.key){
-        keyToChange = req.query["key"];//get the shopID of the item to be searched in the DB
+    if(req.body.key){
+        keyToChange = req.body.key;//get the shopID of the item to be searched in the DB
     }
     else{
         console.log("PUT request with no key.");
         res.status(404).send("There is no key specified to update.");
         return false;
     }
-    if(req.query.value){
-        value = req.query["value"];
+    if(req.body.value){
+        value = req.body["value"];
     }
     else{
         console.log("PUT request with no value.");
@@ -312,6 +454,7 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
         res.status(400).send("Images have to be uploaded. This is not the right method.");
         return false;
     }
+
     else if(keyToChange == "clothing gender" && value != "male" && value != "female" && value != "unisex"){
         console.log(`item clothing gender value "${value}" is not valid. It needs to be "male", "female" or "unisex".`)
         res.status(400).send("Item was not modified because clothing gender value is not male, female or unisex.");
@@ -336,6 +479,7 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
 
     else{ //If fields are ok
         try{
+            console.log("Connecting to DB");
             client.connect(); //Connect to DB
             const database = client.db("shopItemsDB");
             const collection = database.collection("items");
@@ -367,8 +511,8 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
         }
         finally{
             // Close the connection
-            console.log("Closing client");
             await client.close();
+            console.log("Closing DB connection")
         }
     }
 });

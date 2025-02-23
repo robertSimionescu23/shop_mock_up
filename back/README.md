@@ -69,4 +69,5 @@ A method to upload images to the server. It is separate as the mechanics involve
 ### Put requests
 A method to change the characteristics of a existing database item. The fields are checked. Images cannot be changed this way as they have to be uploaded.
 
-TODO: Add a way to delete or change images.
+### Delete image requests
+A method to change delete images contained in the item directories.
