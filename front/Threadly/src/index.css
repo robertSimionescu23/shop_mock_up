@@ -12,3 +12,22 @@ body{
     font-family: Valentine;
     src: url('assets/fonts/ShineInValentine.ttf')
 }
+
+@font-face{
+    font-family: Cake;
+    src: url('assets/fonts/CreamCakeBold.otf')
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        background: rgb(255, 255, 255);
+        --textColor: black;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: rgb(19, 19, 19);
+        --textColor: white;
+    }
+}

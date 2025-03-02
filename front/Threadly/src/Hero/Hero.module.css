@@ -1,0 +1,15 @@
+.HeroDiv{
+    width: 100%;
+    margin-top: 6em;
+    display: flex;
+    flex-direction: column;
+
+}
+
+h2{
+    align-self: center;
+    color: var(--textColor);
+    font-family: Cake;
+    font-size: 4em;
+
+}
