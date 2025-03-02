@@ -18,16 +18,22 @@ body{
     src: url('assets/fonts/CreamCakeBold.otf')
 }
 
-@media (prefers-color-scheme: light) {
-    body {
-        background: rgb(255, 255, 255);
-        --textColor: black;
-    }
+@font-face{
+    font-family: Graffiti;
+    src: url('assets/fonts/UrbanGraffiti.ttf')
 }
 
-@media (prefers-color-scheme: dark) {
-    body {
-        background: rgb(19, 19, 19);
-        --textColor: white;
-    }
+@font-face{
+    font-family: Urban;
+    src: url('assets/fonts/UrbanBlocker.ttf')
+}
+
+@font-face{
+    font-family: Jack;
+    src: url('assets/fonts/Jacksilver.ttf')
+}
+
+body {
+    background: rgb(19, 19, 19);
+    --textColor: white;
 }

@@ -1,0 +1,19 @@
+.SliderDiv{
+    display: flex;
+    flex-direction: column;
+    /* align-items: right; */
+}
+
+.title{
+    color: var(--textColor);
+    font-family: Jack;
+    font-size: 3em;
+    margin-left: 5%;
+    align-self:flex-start
+}
+
+.photoSlider{
+    width: calc(100vw - 2px);
+    height: 30vh;
+    border: solid 1px var(--textColor);
+}

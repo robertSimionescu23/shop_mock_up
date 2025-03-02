@@ -1,14 +1,16 @@
 import styles from "./Hero.module.css"
+import skaters from "../assets/images/parker-gibbons-Wx6oQRl7Wa0-unsplash.jpg"
 
-function Hero({boxData}){
-    console.log(boxData)
+function Hero(){
 
-    const boxes = boxData.map(data => <div className = {styles.box}><h2 className = {styles.boxTitle}>{data["title"]}</h2><img src = {data["image"]}/></div>);
-    return <div className = {styles.HeroDiv}>
-        <h2 className = {styles.heroSlogan}>Fresh new threads</h2>
-        <div className></div>
-        {boxes}
+    return <>
+    <img src = {skaters} className={styles.heroImage}></img>
+    <div className = {styles.heroText}>
+        <h1 className = {styles.slogan}> Shop from friends</h1>
+        <h1 className = {styles.goToButton}> See What&#39;s New &#8663;</h1>
     </div>
+
+    </>
 }
 
 export default Hero

@@ -6,6 +6,45 @@
 
 }
 
+.heroImage{
+    width: 100%;
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.heroText{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-inline: auto;
+    margin-top: 2em;
+    width: fit-content;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.slogan{
+    margin: 0;
+    font-family: Jack;
+    font-size: 5em;
+    color: var(--textColor);
+    cursor: pointer;
+}
+
+.goToButton{
+    font-family: Cake;
+    font-size: 4em;
+    margin-top: 0.1em;
+    color: var(--textColor);
+    cursor: pointer;
+}
 h2{
     align-self: center;
     color: var(--textColor);
