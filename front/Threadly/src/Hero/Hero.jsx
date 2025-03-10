@@ -7,7 +7,6 @@ function Hero(){
     <img src = {skaters} className={styles.heroImage}></img>
     <div className = {styles.heroText}>
         <h1 className = {styles.slogan}> Shop from friends</h1>
-        <h1 className = {styles.goToButton}> See What&#39;s New &#8663;</h1>
     </div>
 
     </>

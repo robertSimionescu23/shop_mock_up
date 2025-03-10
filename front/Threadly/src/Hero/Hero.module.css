@@ -3,7 +3,6 @@
     margin-top: 6em;
     display: flex;
     flex-direction: column;
-
 }
 
 .heroImage{
@@ -32,19 +31,12 @@
 
 .slogan{
     margin: 0;
+    margin-top: 5vh;
     font-family: Jack;
     font-size: 5em;
     color: var(--textColor);
-    cursor: pointer;
 }
 
-.goToButton{
-    font-family: Cake;
-    font-size: 4em;
-    margin-top: 0.1em;
-    color: var(--textColor);
-    cursor: pointer;
-}
 h2{
     align-self: center;
     color: var(--textColor);
