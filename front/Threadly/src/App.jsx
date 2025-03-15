@@ -1,13 +1,15 @@
 import './App.css'
 import NavBar from './Nav/NavBar.jsx'
-import Hero from './Hero/Hero.jsx'
+import Section from './Section/Section.jsx'
 
 function App() {
-  return (
-    <>
-      <NavBar/>
-      {/* TODO: Move image getting to back server */}
-      <Hero/>
+  return (<>
+    <NavBar/>
+    <div className = "heroText">
+        <h1 className = "slogan"> Shop from friends</h1>
+        {/* TODO: Move image getting to back server */}
+        <Section sectionText = "What&apos;s new"/>
+    </div>
     </>
   )
 }

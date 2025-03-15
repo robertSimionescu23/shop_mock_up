@@ -1,0 +1,40 @@
+.grid{
+    display: grid;
+    grid-template-columns: repeat(4, 25%);
+    grid-column-gap: 20px;
+    grid-row-gap: 30px;
+    width: 75vw;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20vh;
+    animation: fadeIn 1s;
+}
+
+/* @keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+} */
+
+
+.item{
+    aspect-ratio: 0.75;
+    background-size: cover;
+    cursor: pointer;
+    border-radius: 5%;
+}
+
+@media all and (max-width: 1200px) {
+    .grid{
+        grid-template-columns: repeat(3, 33%);
+    }
+}
+
+@media all and (max-width: 600px) {
+    .grid{
+        grid-template-columns: repeat(2, 50%);
+    }
+}

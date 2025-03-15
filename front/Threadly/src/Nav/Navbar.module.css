@@ -23,10 +23,9 @@
     cursor: pointer;
     margin: 0;
     padding: 20px 0 0 2vw;
-    font-size: 3em;
+    font-size: 5vh;
     color: var(--textColor)
 }
-
 
 .iconObject{
     height: 1.5em;
@@ -34,4 +33,122 @@
     cursor: pointer;
     margin-left: 2vw;
     color: var(--textColor);
+    padding: 10px;
+}
+
+.searchClickedClass{
+    color: black;
+    z-index: 11;
+}
+
+.searchBar{
+    position: fixed;
+    padding: 10px;
+    width: 450px;
+    height: calc(1.5em);
+    z-index: 9;
+    background-color: white;
+    right: calc(2vw + 2vw + 20px + 1.5em );
+    top: 18px;
+    color: black;
+    border-radius: 25px 25px 25px 25px;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    outline: none;
+    animation: long 0.3s forwards;
+}
+
+@keyframes long {
+    0% {
+        width: calc(1.5em + 20px);
+        color: transparent;
+    }
+    100% {
+        width: 450px;
+        color: gray;
+    }
+}
+
+.userClickedClass{
+    color: black;
+    background-color: white;
+    border: solid 2px black;
+    border-bottom: 0;
+    z-index: 20;
+    animation: userFadeIn 0.3s forwards;
+}
+
+@keyframes userFadeIn {
+    0% {
+        opacity: 0;
+        border-radius: 50% 50% 50% 50%;
+    }
+    100% {
+        opacity: 1;
+        border-radius: 25% 25% 0 0;
+    }
+}
+
+.userMenu{
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1em;
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+    background-color: white;
+    right: calc(2vw + 2px);
+    top: calc( 3em + 14px);
+    border-radius: 15% 0 15% 15%;
+    animation: fadeIn 0.3s forwards 0.1s;
+}
+
+.userMenuBorder{
+    position: fixed;
+    width: 150px;
+    height: 150px;
+    padding: 1em;
+    border: solid black 2px;
+    background-color: white;
+    right: calc(2vw);
+    opacity: 0;
+    top: calc( 3em + 12px);
+    border-radius: 15% 0 15% 15%;
+    animation: fadeIn 0.3s forwards 0.1s;
+}
+
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.userText{
+    font-family: Geo;
+}
+
+.logInTabs{
+    font-family: Geo;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logInText{
+    margin-top: 10px;
+    padding: 5px;
+    border-style: solid;
+    border-color: purple;
+    background-color: purple;
+    color: white;
+    border-radius: 15px;
+    cursor: pointer;
 }
