@@ -28,8 +28,8 @@
 }
 
 .iconObject{
-    height: 1.5em;
-    width:  1.5em;
+    height: 2em;
+    width:  2em;
     cursor: pointer;
     margin-left: 2vw;
     color: var(--textColor);
@@ -37,7 +37,8 @@
 }
 
 .searchClickedClass{
-    color: black;
+    color: purple;
+    border: none;
     z-index: 11;
 }
 
@@ -71,7 +72,7 @@
 }
 
 .userClickedClass{
-    color: black;
+    color: purple;
     background-color: white;
     border: solid 2px black;
     border-bottom: 0;
@@ -151,4 +152,82 @@
     color: white;
     border-radius: 15px;
     cursor: pointer;
+}
+
+.backDrop{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vw;
+    background-color: rgba(240, 248, 255, 0.7);
+}
+
+.registerBox{
+    padding: 3%;
+    position: absolute;
+    top: calc(50vh - 250px);
+    left: calc(50vw - 200px);
+    width: 400px;
+    height: 500px;
+    background-color: rgb(255, 255, 255);
+    border: solid black 2px;
+    border-radius: 5% 5% 5% 5%;
+    flex-direction: column;
+    display: flex;
+}
+
+.registerBanner{
+    font-family: Geo;
+    margin-bottom:8%;
+    align-self: center;
+}
+form{
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    display: flex;
+    font-family: Geo;
+}
+
+.formDiv{
+    margin-bottom: 10%;
+    display: flex;
+    flex-direction: column;
+}
+
+input{
+    box-sizing:border-box;
+    width: 90%;
+    height: 25px;
+    padding: 1px;
+    border-radius: 5px 5px 5px 5px;
+    border-style: solid;
+    border-width: 2px;
+    box-shadow: none;
+}
+
+.confirmButton{
+    width: 25px;
+    height: 25px;
+    margin-left: 2px;
+    border-width: 2px;
+    background-color: purple;
+    border: solid 1px gray;
+    border-radius: 25% 50% 50% 25%;
+}
+.confirmButton:active{
+    background-color: rgb(85, 0, 85);
+}
+
+.pair{
+    margin-bottom: 5%;
+    display: flex;
+    align-items: center;
+}
+
+
+.formDiv input:focus{
+    outline: none;
+    outline: solid 3px purple;
 }
