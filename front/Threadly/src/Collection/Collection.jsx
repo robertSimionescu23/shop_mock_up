@@ -7,6 +7,7 @@ import axios from "axios";
 function AdminConsole({ title }) {
     const [collection, setCollection] = useState([]);
     const [imageSrc, setImageSrc] = useState([]);
+    const [focused, setFocused] = useState(null);
 
     useEffect(() => {
         axios
@@ -45,11 +46,12 @@ function AdminConsole({ title }) {
     }, [collection]);
 
     return (
+        <>
         <div className={styles.collection}>
             <div className={styles.collectionTitelContainer}>
                 <span className={`defaultText ${styles.collectionTitle}`}>{title}</span>
                 <svg className={styles.add}
-                fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
+                fill="#FFFFFF" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
                     width="800px" height="800px" viewBox="0 0 45.402 45.402"
                     xmlSpace="preserve">
                     <g>
@@ -62,12 +64,29 @@ function AdminConsole({ title }) {
             </div>
             <div className={styles.collectionItems}>
                 {imageSrc && imageSrc.map((image, index) => (
-                    <img key={index} src={image} className={styles.itemExample} alt={`image-${index}`} />
+                    <img key={index} src={image} className={styles.item} alt={`image-${index}`} onClick={() => setFocused(index)}/>
                 ))
                 }
-
             </div>
         </div>
+        {focused != null &&
+        <>
+            <div className = {styles.focusBackDrop} onClick={()=>setFocused(null)}/>
+            <div className = {styles.focusedBox}>
+            <div className={styles.images}>
+                {/* TODO: implement fetching images based on id */}
+                <div className={styles.item} style={{"width" : "200px", "height" : "200px"}}></div>
+                <div className={styles.item} style={{"width" : "200px", "height" : "200px"}}></div>
+                <div className={styles.item} style={{"width" : "200px", "height" : "200px"}}></div>
+                <div className={styles.item} style={{"width" : "200px", "height" : "200px"}}></div>
+                <div className={styles.item} style={{"width" : "200px", "height" : "200px"}}></div>
+                <div className={styles.item} style={{"width" : "200px", "height" : "200px"}}></div>
+            </div>
+
+            </div>
+        </>
+        }
+        </>
     )
 }
 

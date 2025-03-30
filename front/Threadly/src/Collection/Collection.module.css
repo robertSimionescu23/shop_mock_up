@@ -17,11 +17,13 @@
     display: flex;
 }
 
-.itemExample{
-    background-color: blue;
+.item{
+    flex-shrink: 0;
+    background-color: gray;
     margin-right: 10px;
     height: 100px;
     width: 100px;
+    cursor: pointer;
 }
 
 .collectionTitelContainer{
@@ -39,4 +41,36 @@
     border-radius: 5px;
     padding: 2px;
     cursor: pointer;
+}
+
+.focusBackDrop{
+    position: absolute;
+    left: 0;
+    top:  0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: rgba(128, 128, 128, 0.301);
+}
+
+.focusedBox{
+    position: absolute;
+    top: calc(50% - 400px);
+    left: calc(50% - 400px);
+    z-index: 10;
+    width: 800px;
+    height: 800px;
+    background-color: rgb(30, 30, 30);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.images{
+    margin-top: 5%;
+    width: 90%;
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    overflow-y: scroll;
 }
