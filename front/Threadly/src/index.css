@@ -3,6 +3,11 @@
     padding: 0;
 }
 
+.defaultText{
+font-family: Geo;
+color: white;
+}
+
 body{
     margin: 0;
     padding: 0;

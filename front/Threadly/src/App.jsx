@@ -1,16 +1,17 @@
 import './App.css'
-import NavBar from './Nav/NavBar.jsx'
-import Section from './Section/Section.jsx'
+import MainPage from './MainPage/MainPage.jsx'
+import {Routes, Route, HashRouter} from 'react-router-dom'
+import AdminConsole from './AdminConsole/AdminConsole.jsx'
 
 function App() {
-  return (<>
-    <NavBar/>
-    <div className = "heroText">
-        <h1 className = "slogan"> Shop from friends</h1>
-        {/* TODO: Move image getting to back server */}
-        <Section sectionText = "What&apos;s new"/>
-    </div>
-    </>
+  return (
+    <HashRouter>
+        <Routes>
+            <Route path = "/" element = {<MainPage/>}/>
+            <Route path ="/admin" element = {<AdminConsole/>}></Route>
+        </Routes>
+    </HashRouter>
+
   )
 }
 

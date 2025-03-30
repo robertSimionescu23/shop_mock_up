@@ -5,6 +5,8 @@ import { requiredFields } from './createDBEntry.js';
 import { customAlphabet } from 'nanoid'
 import { unlink, mkdirSync, readdirSync , statSync} from 'fs';
 import path from 'path';
+import cors from "cors"
+import mime from 'mime-types';
 
 const uri = "mongodb://localhost:27017/";
 // Create a new MongoClient
@@ -12,6 +14,7 @@ const client = new MongoClient(uri);
 
 const httpServer = express();
 
+httpServer.use(cors());
 httpServer.use(express.json());
 httpServer.use(express.urlencoded({ extended: true }));
 
@@ -165,6 +168,50 @@ function startServer(port){
     });
 }
 
+httpServer.get('/api/getCollection', async (req, res) => {
+    let collectionName;
+    if(req.query.name){
+        collectionName = req.query.name;
+    }
+    else{
+        console.log("Request does not contain the collection name.");
+        res.status(404).send("Request does not contain the collection name.");
+        return false;
+    }
+
+    try{
+        console.log("Connecting to DB");
+        await client.connect(); //Connect to DB
+
+        //Choose the db and collection
+        const database   = client.db('shopItemsDB');
+        const collection = database.collection(`C_${collectionName}`);
+
+        const documents = await collection.find({}).toArray();
+
+        if(documents.length == 0){
+            console.log("the collection is empty");
+            res.status(404).send("There are no items in this collection");
+            return false;
+        }
+        else{
+            console.log(`Collection ${collectionName} has been provided`); //TODO: Add credentials for requesting collections
+            res.status(200).json(documents);
+            return true;
+        }
+    }
+    catch(error){
+        res.status(400).send(`Something went wrong`);
+        console.error("Error getting item", error);
+        return false;
+    }
+    finally{
+        client.close();
+        console.log("Closing DB connection")
+    }
+
+});
+
 // Define getting an item from the DB
 httpServer.get('/api/itemById', async (req, res) => {
     let searchShopId;
@@ -218,6 +265,32 @@ httpServer.get('/api/itemById', async (req, res) => {
     }
 });
 
+httpServer.get('/api/imageByUrl', async (req, res, next) => {
+    const { id, path: filePath } = req.query;
+
+    const op = {
+        root: path.join("./images/",id)
+    };
+
+    const file = filePath;
+
+    const mimeType = mime.lookup(file);  // This returns MIME type like 'image/jpeg', 'image/png', etc.
+
+    if (!mimeType) {
+        res.status(400).send('Unsupported file type');
+        return;
+    }
+
+    res.setHeader('Content-Type', mimeType);
+
+    res.status(200).sendFile(file, op, function (error) {
+        if (error) {
+            next(error);
+        } else {
+            console.log('File Sent is:', file);
+        }
+    });
+})
 
 httpServer.post('/api/item', async (req, res) => { //Note: For image uploading I can just enter them in the same menu, but upload the image through different request.
     if(!Object.keys(req.body).length){

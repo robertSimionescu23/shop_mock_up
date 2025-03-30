@@ -1,0 +1,25 @@
+.pageContainer{
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    margin-top: 13vh;
+}
+
+.gridItem{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 2em;
+}
+
+.leftColumn{
+    border-right: 1px solid white;
+}
+
+.tab{
+    padding: 20px;
+}
+
+.tab:hover{
+    background-color: rgb(34, 34, 34);
+    border-radius: 25px;
+}
