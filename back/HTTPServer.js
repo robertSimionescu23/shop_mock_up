@@ -229,8 +229,13 @@ httpServer.get('/api/itemById', async (req, res) => {
 
             //Choose the db and collection
             const database   = client.db('shopItemsDB');
-            const collection = database.collection('items');
-
+            let collection;
+            if(!req.query["collection"])
+                collection = database.collection('items');
+            else{
+                console.log(`Searching in collection C_${req.query["collection"]}`);
+                collection = database.collection(`C_${req.query["collection"]}`);
+            }
             let searchDBID = new ObjectId(searchShopId)
 
             const DBquery = { _id : searchDBID }; //Format the shopID into a suitable format
@@ -479,6 +484,7 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
     let searchShopId;
     let keyToChange ;
     let value       ;
+    let collectionToChange = req.body.collection;
 
     console.log(req.body)
 
@@ -555,7 +561,11 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
             console.log("Connecting to DB");
             client.connect(); //Connect to DB
             const database = client.db("shopItemsDB");
-            const collection = database.collection("items");
+            let collection;
+            if(collectionToChange)
+                collection = database.collection(`C_${collectionToChange}`);
+            else
+                collection = database.collection("items");
 
             let DBID = new ObjectId(searchShopId)
 

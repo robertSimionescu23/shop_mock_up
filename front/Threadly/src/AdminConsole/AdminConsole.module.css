@@ -16,10 +16,16 @@
 }
 
 .tab{
+    margin-bottom: 15px;
     padding: 20px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.pressedTab{
+    background-color: rgb(56, 55, 55);
 }
 
 .tab:hover{
-    background-color: rgb(34, 34, 34);
-    border-radius: 25px;
+    background-color: rgba(201, 201, 201, 0.226);
 }
