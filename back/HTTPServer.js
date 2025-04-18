@@ -195,7 +195,7 @@ httpServer.get('/api/getCollection', async (req, res) => {
             return false;
         }
         else{
-            console.log(`Collection ${collectionName} has been provided`); //TODO: Add credentials for requesting collections
+            console.log(`Collection "${collectionName}" has been provided`); //TODO: Add credentials for requesting collections
             res.status(200).json(documents);
             return true;
         }
@@ -518,9 +518,7 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
         value = req.body["value"];
     }
     else{
-        console.log("PUT request with no value.");
-        res.status(404).send("There is no value to assign to the specified key.");
-        return false;
+        value = "";
     }
 
     if (!(requiredFields.includes(keyToChange))){
@@ -572,8 +570,11 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
             const filter = { _id: DBID };        // Condition to find the document
 
             let update;
-            if(keyToChange == "sizes" || keyToChange == "keywords")
-                update = { $set: { [keyToChange]: value.split(" ") } }; // Fields to update
+            if((keyToChange == "sizes" || keyToChange == "keywords"))
+                if(value = "")
+                    update = { $set: { [keyToChange]: [] } }; // Fields to update
+                else
+                    update = { $set: { [keyToChange]: value.split(" ") } }; // Fields to update
             else
                 update = { $set: { [keyToChange]: value } };
 

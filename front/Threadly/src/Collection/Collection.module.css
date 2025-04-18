@@ -1,3 +1,9 @@
+.focusWrapper{
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
 
 .collection{
     background-color: rgb(29, 29, 29);
@@ -36,7 +42,7 @@
 .add{
     width: 25px;
     height: 25px;
-    background-color: white;
+    background-color: rgb(97, 97, 97);
     padding: calc(50px - 12.5px);
     cursor: pointer;
 }
@@ -64,25 +70,27 @@
     position: absolute;
     left: 0;
     top:  0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     z-index: 1;
     background-color: rgba(128, 128, 128, 0.301);
 }
 
 .focusedBox{
+    padding: 15px;
     position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
-    top: 50;
+    top: 5%;
     left: calc(50% - 400px);
     z-index: 10;
     width: 800px;
-    height: 800px;
+    height: 85%;
     background-color: rgb(30, 30, 30);
     border-radius: 20px;
-    overflow-x: scroll;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .focusItem{
@@ -98,6 +106,7 @@
 
 .images{
     margin-top: 5%;
+    padding-bottom: 20px;
     width: 90%;
     flex-shrink: 0;
     margin-right: auto;
@@ -105,32 +114,33 @@
     display: flex;
     flex-direction: row;
     overflow-y: scroll;
+    border-bottom: 1px solid rgb(49, 49, 49);
 }
 
 .infoGrid{
     margin-top: 30px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 3fr 3fr 1fr;
     width: 100%;
 }
 
 .infoGridItem{
     width: 100%;
-    margin-bottom: 30px;
+    padding: 10px;
     display: flex;
     justify-content: center;
+    align-items: center;
     font-family: Geo;
     color: white;
-    border-bottom: 1px solid rgb(49, 49, 49);
 }
 
-.topOfGrid{
-    border-bottom: 3px solid rgb(197, 197, 197);
-}
 
 .bubbleTab{
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    grid-column: span 2;
     gap: 5px;
 }
 
@@ -149,4 +159,56 @@
     margin-left: 5px;
     cursor: pointer;
 
+}
+
+.editButton
+{
+    padding: 5px;
+    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.textWrapper{
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+.txtInput{
+    width: 80%;
+    height: 100%;
+    font-size: 0.8em;
+    font-family: Geo;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editButton path
+{
+    fill: #555555;
+}
+.editButton:hover{
+    background-color: #555555;
+}
+.editButton:hover path
+{
+    fill: #ffffff;
+}
+
+.addSpecButton{
+    width: 1.4em;
+    height: 1.4em;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.addSpecButton:hover{
+    background-color: #555555;
 }
