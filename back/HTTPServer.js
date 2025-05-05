@@ -480,7 +480,7 @@ httpServer.delete(`/api/deleteImage`, async (req,res) =>{
 
 });
 
-httpServer.put('/api/changeItemByID', async (req, res) => {
+httpServer.put('/api/changeItemByID', async (req, res) => { //TODO: Add a way to delete images from image folder, and their respective folders if needed.
     let searchShopId;
     let keyToChange ;
     let value       ;
