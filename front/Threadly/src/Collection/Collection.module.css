@@ -4,6 +4,17 @@
     overflow: hidden;
 }
 
+.itemXButton{
+    position: relative;
+    width: 15px;
+    height: 15px;
+    font-size: 10px;
+    font-family: Geo;
+    top: 2px;
+    left: -27px;
+    z-index: 10;
+    cursor: pointer;
+}
 
 .collection{
     background-color: rgb(29, 29, 29);
@@ -100,8 +111,10 @@
 }
 
 .focusedTitle{
-    margin-top   : 30px;
-    margin-bottom: 30px;
+    width: 90%;
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid rgb(49, 49, 49);
 }
 
 .images{
@@ -134,13 +147,17 @@
     color: white;
 }
 
+.nameTab{
+    margin-left: 20px;
+    justify-content: left;
+}
+
 
 .bubbleTab{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    grid-column: span 2;
     gap: 5px;
 }
 
@@ -152,6 +169,11 @@
     border-radius: 15px;
     background-color: gray;
 
+}
+
+.bubbleInput{
+    width: 30%;
+    margin-left: 0;
 }
 
 .xButton{
@@ -167,7 +189,6 @@
     border-radius: 10px;
     width: 30px;
     height: 30px;
-    margin-left: 15px;
     cursor: pointer;
 }
 
@@ -178,31 +199,35 @@
     width: 100%;
 }
 .txtInput{
-    width: 80%;
+    width: 60%;
     height: 100%;
     font-size: 0.8em;
     font-family: Geo;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: right;
 }
 
 .editButton path
 {
-    fill: #555555;
+    fill: #ffffff;
 }
 .editButton:hover{
     background-color: #555555;
 }
-.editButton:hover path
-{
-    fill: #ffffff;
+
+
+.binaryValue{
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
 }
 
 .addSpecButton{
-    width: 1.4em;
-    height: 1.4em;
-    background-color: transparent;
+    padding: 5px;
+    border-radius: 10px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;

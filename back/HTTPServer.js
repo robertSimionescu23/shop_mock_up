@@ -526,11 +526,11 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
         res.status(400).send(`Item was not modified because field to be changed, "${keyToChange}", is not valid.`);
         return false;
     }
-    else if(keyToChange == "images"){
-        console.log(`Images have to be uploaded. This is not the right method`)
-        res.status(400).send("Images have to be uploaded. This is not the right method.");
-        return false;
-    }
+    // else if(keyToChange == "images"){
+    //     console.log(`Images have to be uploaded. This is not the right method`)
+    //     res.status(400).send("Images have to be uploaded. This is not the right method.");
+    //     return false;
+    // }
 
     else if(keyToChange == "clothing gender" && value != "male" && value != "female" && value != "unisex"){
         console.log(`item clothing gender value "${value}" is not valid. It needs to be "male", "female" or "unisex".`)
@@ -542,7 +542,7 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
         res.status(400).send("Item was not modified because currency value is not euro or lei.");
         return false;
     }
-    else if(keyToChange == "price" && isNaN(parseFloat(value))){
+    else if(keyToChange == "price" && (isNaN(parseFloat(value)) || parseFloat(value) != value || parseFloat(value) < 0 )){
         console.log(`item price "${value}" is not a valid floating point number.`)
         res.status(400).send("Item was not modified because price value is not valid.");
         return false;
@@ -570,11 +570,12 @@ httpServer.put('/api/changeItemByID', async (req, res) => {
             const filter = { _id: DBID };        // Condition to find the document
 
             let update;
-            if((keyToChange == "sizes" || keyToChange == "keywords"))
-                if(value = "")
+            if((keyToChange == "sizes" || keyToChange == "keywords" || keyToChange == "images")){
+                if(value == "")
                     update = { $set: { [keyToChange]: [] } }; // Fields to update
                 else
                     update = { $set: { [keyToChange]: value.split(" ") } }; // Fields to update
+            }
             else
                 update = { $set: { [keyToChange]: value } };
 

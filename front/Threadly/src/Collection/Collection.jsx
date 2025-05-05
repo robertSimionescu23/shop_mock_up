@@ -4,6 +4,7 @@ import  { useEffect, useState } from "react";
 import axios from "axios";
 import InfoTab from "./InfoTab";
 import BubbleTab from "./BubbleTab";
+import BinaryTab from "./BinaryTab";
 
 
 function Collection({ title }) {
@@ -11,9 +12,7 @@ function Collection({ title }) {
     const [imageSrc, setImageSrc] = useState([]);
     const [focused, setFocused] = useState(null);
     const [focusedInfo, setFocusedInfo] = useState({});
-    const [focuseditemImages, setFocusedItemImages] = useState([]);
-
-    let field;
+    const [focusedItemImages, setFocusedItemImages] = useState([]);
 
     useEffect(() => {
         axios
@@ -37,7 +36,6 @@ function Collection({ title }) {
                     collection: `${title}`
                 },
             }).then((response) =>{
-                console.log(response.data);
                 setFocusedInfo(response.data)
             }).catch(error => {
                 console.error("Error fetching images:", error);
@@ -90,34 +88,8 @@ function Collection({ title }) {
         }
     }, [collection]);
 
-    const removebubble = ( hookRef, field, index, id) =>{
-        let updatedArray;
-        let updatedArrayJSON;
-
-        hookRef((prevInfo) => {
-            if(field == "sizes"){
-                updatedArray = prevInfo.sizes.filter((_, i) => i !== index); // Remove size at given index
-                updatedArrayJSON = { ...prevInfo, sizes: updatedArray };
-            }
-            else if(field == "keywords"){
-                updatedArray = prevInfo.keywords.filter((_, i) => i !== index); // Removekeyword at given index
-                updatedArrayJSON = { ...prevInfo, keywords: updatedArray };
-            }
-            else {
-                console.log("Invalid category");
-                return {};
-            }
-
-            axios.put("http://localhost:3000/api/changeItemByID", {
-                id: id,
-                key: field,
-                value: updatedArray.join(" "),
-                collection: title
-            }).then( (response) =>
-                console.log(response)
-            ).catch((error) => console.error(error))
-            return updatedArrayJSON // Set the updated keywords array back into state
-        });
+    function removeImage(index){
+        setFocusedItemImages(prev => prev.filter((_, i) => i !== index));
     }
 
     return (
@@ -128,7 +100,13 @@ function Collection({ title }) {
             </div>
             <div className={styles.collectionItems}>
                 {imageSrc && imageSrc.map((image, index) => (
+                    <>
                     <img key={index} src={image} className={styles.item} onClick={() => setFocused(index)}/>
+                    <svg className = {`${styles.itemXButton}`}
+                                                                                                                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z" fill="#0F1729"/>
+                                                                                                            </svg>
+                    </>
                 ))
                 }
                 <svg className={styles.add}
@@ -150,8 +128,14 @@ function Collection({ title }) {
                 <div className = {styles.focusedBox}>
                     <div className={styles.images}>
                         {/* TODO: implement fetching images based on id */}
-                        {focuseditemImages && focuseditemImages.map((image, index) => (
-                        <img key={index} src={image} className={`${styles.item} ${styles.focusItem}`} onClick={() => setFocused(index)}/>
+                        {focusedItemImages && focusedItemImages.map((image, index) => (
+                            <>
+                                <img key={index} src={image} className={`${styles.item} ${styles.focusItem}`} style={{cursor : "default"}}/>
+                                <svg className = {`${styles.itemXButton}`} onClick = {() =>removeImage(index)}
+                                                                                                                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z" fill="#0F1729"/>
+                                                                                                            </svg>
+                            </>
                         ))}
                         <div className ={styles.addImageWrapper}>
                                 <svg className={styles.addImage}
@@ -206,9 +190,11 @@ function Collection({ title }) {
                              onChange = {setFocusedInfo}
                     />
 
-
-                    <div className={styles.infoGridItem}>Available</div>
-                    <div className={styles.infoGridItem}><span className = {styles.available}>{focusedInfo.available}</span></div>
+                    <BinaryTab name = "Available"
+                               field = "available"
+                               collection = {title}
+                               info = {focusedInfo}
+                    />
 
                 {/*TODO: To be implemented */}
                 {/* <div className={styles.infoGridItem}>Stock</div>

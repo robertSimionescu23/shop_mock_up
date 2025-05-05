@@ -1,9 +1,12 @@
 import styles from "./Collection.module.css"
 import axios from "axios";
 import PropTypes from 'prop-types';
+import  { useState } from "react";
 
 function BubbleTab({title, collection, info, setInfoHook, field}){
 
+    const [adding, setAdding] = useState(false);
+    const [tempValue, setTempValue] = useState();
     const removebubble = (index) =>{
 
             let updatedArray = info[field].filter((_, i) => i !== index); // Removekeyword at given index
@@ -14,16 +17,27 @@ function BubbleTab({title, collection, info, setInfoHook, field}){
                 key: field,
                 value: updatedArray.join(" "),
                 collection: collection
-            }).then( (response) =>
-                console.log(response)
-            ).catch((error) => console.error(error))
+            }).catch((error) => console.error(error))
             setInfoHook(updatedArrayJSON); // Set the updated keywords array back into state
     }
+
+    const handleSave = () => {
+        setAdding(false);
+        setInfoHook({...info, [field]:[...info[field], tempValue]});  // call parent callback to update value in state/db
+        console.log([...info[field], tempValue].join(" "))
+        axios.put("http://localhost:3000/api/changeItemByID", {
+            id: info._id,
+            key: field,
+            value: [...info[field], tempValue].join(" "),
+            collection: collection
+        }).then((response) => console.log(response))
+        .catch((error) => console.error(error))
+      };
 
     return (
         info[field]?
         < >
-            <div className ={styles.infoGridItem}>{title}</div>
+            <div className ={`${styles.infoGridItem} ${styles.nameTab}`}>{title}</div>
             <div className={`${styles.infoGridItem} ${styles.bubbleTab}`}>{
                 // eslint-disable-next-line react/prop-types
                 info[field].map((value, index) => (
@@ -31,8 +45,19 @@ function BubbleTab({title, collection, info, setInfoHook, field}){
                         <span>{value}</span>
                         <div className = {styles.xButton} onClick={() => removebubble(index)}>x</div>
                     </div>))}
-                    <div className ={`${styles.bubble} ${styles.addSpecButton}`} >+</div>
+                {adding &&  <div className ={`${styles.bubble} ${styles.bubbleInput}`}>
+                        <input className={`${styles.txtInput} ${styles.textWrapper}`}
+                        onChange={(e) => setTempValue(e.target.value)}
+                        onBlur = {() => setAdding(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSave();
+                        }}
+                        autoFocus
+                        />
+                        <div className = {styles.xButton} onClick={() => setAdding(false)}>x</div>
+                </div>}
             </div>
+            <div className ={`${styles.infoGridItem}`} ><div className = {styles.addSpecButton} onClick = {() => setAdding(!adding)}>+</div></div>
         </>
         :
         <></>
