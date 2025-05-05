@@ -28,39 +28,37 @@ function Collection({ title }) {
     }, [title]);
 
     useEffect(() => {
-    {
         if (focused != null) {
             axios.get("http://localhost:3000/api/itemById", {
                 params: {
-                    id: collection[focused][0], //The ID
+                    id: collection[focused][0], // The ID
                     collection: `${title}`
                 },
-            }).then((response) =>{
-                setFocusedInfo(response.data)
-            }).catch(error => {
-                console.error("Error fetching images:", error);
             })
+            .then((response) => {
+                const info = response.data;
+                setFocusedInfo(info);
+                console.log(info["images"])
 
-            Promise.all( //Send requests for all the images at the paths saved in the collection array, requesting by ID and path.
-                collection.map(() =>
-                    axios.get("http://localhost:3000/api/imageByUrl", {
-                        params: {
-                            id: collection[focused][0], //The ID
-                            path: collection[focused][1], //The URL
-                        },
-                        responseType: 'blob', //blobs can be converted to image source
-                    })
-                )
-            )
-                .then(responses => {
-                    const images = responses.map(response => URL.createObjectURL(response.data));
-                    setFocusedItemImages(images);
-                })
-                .catch(error => {
-                    console.error("Error fetching images:", error);
-                });
-
-            }
+                return Promise.all(
+                    info["images"].map(img =>
+                        axios.get("http://localhost:3000/api/imageByUrl", {
+                            params: {
+                                id: collection[focused][0], // The ID
+                                path: img, // The URL
+                            },
+                            responseType: 'blob',
+                        })
+                    )
+                );
+            })
+            .then(responses => {
+                const images = responses.map(response => URL.createObjectURL(response.data));
+                setFocusedItemImages(images);
+            })
+            .catch(error => {
+                console.error("Error fetching images:", error);
+            });
         }
     }, [focused]);
 
